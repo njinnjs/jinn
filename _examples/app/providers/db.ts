@@ -1,7 +1,7 @@
 import { Database, MongoClient } from "https://deno.land/x/mongo@v0.29.1/mod.ts";
-import { Provider } from "jinn/core/mod.ts";
+import type { FactoryProvider } from "jinn/core/njinn/types.ts";
 
-const DbProvider: Provider = {
+const DbProvider: FactoryProvider = {
   token: Database,
   useFactory: async () => {
     const client = new MongoClient();

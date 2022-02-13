@@ -7,6 +7,6 @@ export default class UsersService {
   }
 
   all() {
-    return this.db.collection('users').find({}).toArray();
+    return this.db.collection("users").find({}).toArray();
   }
 }

@@ -1,4 +1,4 @@
-import { Controller, Get, Middleware } from "../../gateway/decorators.ts";
+import { Controller, Get, Middleware } from "../../packages/core/gateway/decorators.ts";
 
 @Middleware(Date)
 @Controller("app")

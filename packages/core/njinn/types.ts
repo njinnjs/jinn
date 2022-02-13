@@ -7,7 +7,7 @@ import type ProviderRegistry from "./provider-registry.ts";
 export type Func<TFunction = Function> = TFunction;
 
 // injection
-export type { Target, ProviderRegistry };
+export type { ProviderRegistry, Target };
 export type Token = Target | symbol | string;
 export type InjectedMetaParam = { index: number; value: Token };
 export type InjectableMetaDescriptor = { scope: string };

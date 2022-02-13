@@ -6,7 +6,6 @@ import ProviderRegistry from "./provider-registry.ts";
 import ModuleRegistry from "./module-registry.ts";
 import Host from "./host.ts";
 
-
 export default function linker(options: LinkerOptions = {}) {
   const { registry = new ModuleRegistry(), logger = getLogger() } = options;
   return function link(target: Target): ModuleRef {
@@ -18,7 +17,7 @@ export default function linker(options: LinkerOptions = {}) {
     // register the providers!
     const provided: ProviderRegistry = providers.reduce(
       (r: ProviderRegistry, p: TargetProvider): ProviderRegistry => r.register(p),
-      new ProviderRegistry(target).register(target)
+      new ProviderRegistry(target).register(target),
     );
 
     // now some exports...
@@ -32,7 +31,7 @@ export default function linker(options: LinkerOptions = {}) {
         }
         throw new Error(`unable to export ${str(p)}`);
       },
-      new ProviderRegistry(target).register(provided.fetch(target))
+      new ProviderRegistry(target).register(provided.fetch(target)),
     );
 
     return registry.save(target, new Host(target, imported, provided, exported, logger));

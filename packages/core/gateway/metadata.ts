@@ -1,6 +1,6 @@
 import type { Target } from "jinn/core/njinn/mod.ts";
 
-export enum GateMeta {
+export enum GatewayMeta {
   Gateway = "xpr:gateway",
   Controller = "xpr:controller",
   Methods = "xpr:methods",
@@ -14,7 +14,6 @@ export enum Keys {
 }
 
 export function readGateway(target: Target) {
-
 }
 
 // const DefaultMethodDescriptor: MethodDescriptor = {

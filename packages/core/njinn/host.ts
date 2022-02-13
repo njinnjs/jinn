@@ -24,7 +24,7 @@ export default class Host implements ModuleRef {
     protected readonly imported: ModuleRef[],
     protected readonly provided: ProviderRegistry,
     protected readonly exported: ProviderRegistry,
-    { levelName, handlers }: Logger
+    { levelName, handlers }: Logger,
   ) {
     this.logger = new Logger(this.id, levelName, { handlers });
   }
