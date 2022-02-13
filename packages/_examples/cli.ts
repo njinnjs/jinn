@@ -1,4 +1,4 @@
-import { Context } from "packages/core/mod.ts";
+import { Context } from "jinn/core/mod.ts";
 import logger from "./app/logger.ts";
 import CliModule from "./app/cli-module.ts";
 import UsersService from "./app/users-service.ts";

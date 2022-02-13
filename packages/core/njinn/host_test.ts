@@ -1,8 +1,8 @@
 import "xpr/reflect";
 import type { ModuleRef, Target } from "./types.ts";
 import linker from "./linker.ts";
-import { assert } from "packages/testing/mod.ts";
-import { ModuleTest } from "packages/testing/nginn_testing.ts";
+import { assert } from "jinn/testing/mod.ts";
+import { ModuleTest } from "jinn/testing/nginn_testing.ts";
 import Host from "./host.ts";
 
 const setup = (): Host => {

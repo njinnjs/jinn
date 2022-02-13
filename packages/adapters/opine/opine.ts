@@ -1,5 +1,5 @@
 import type { Opine } from "./deps.ts";
-import { HttpAdapter } from "packages/gateway/mod.ts";
+import { HttpAdapter } from "jinn/gateway/mod.ts";
 import { opine, Router } from "./deps.ts";
 
 type TRoute = typeof Router;

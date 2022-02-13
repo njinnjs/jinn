@@ -1,6 +1,6 @@
-import { ModuleMetaDescriptor, ModuleRef, Target } from "packages/core/njinn/types.ts";
+import { Target } from "jinn/core/njinn/types.ts";
 
-export interface GatewayMetaDescriptor extends ModuleMetaDescriptor {
+export interface GatewayMetaDescriptor {
   prefix?: string;
   controllers: Target[];
 }

@@ -1,4 +1,4 @@
-import { Controller, Get } from "packages/gateway/mod.ts";
+import { Controller, Get } from "jinn/gateway/mod.ts";
 
 @Controller("test")
 export default class HttpController {

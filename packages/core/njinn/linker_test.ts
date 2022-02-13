@@ -1,9 +1,9 @@
 import "xpr/reflect";
 import type { Func, ModuleRef, Target } from "./types.ts";
 import linker from "./linker.ts";
-import { isCallable, str } from "packages/common/utils/mod.ts";
-import { assert, assertThrows } from "packages/testing/mod.ts";
-import { AllModules, BadExportModule, ModuleTest } from "packages/testing/nginn_testing.ts";
+import { isCallable, str } from "jinn/common/utils/mod.ts";
+import { assert, assertThrows } from "jinn/testing/mod.ts";
+import { AllModules, BadExportModule, ModuleTest } from "jinn/testing/nginn_testing.ts";
 import Host from "./host.ts";
 
 const setup = (): [Func, WeakMap<Target, ModuleRef>] => {

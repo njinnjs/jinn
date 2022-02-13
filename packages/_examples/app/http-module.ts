@@ -1,4 +1,4 @@
-import { Module } from "packages/core/mod.ts";
+import { Module } from "jinn/core/mod.ts";
 import HttpController from "./http-controller.ts";
 
 @Module({

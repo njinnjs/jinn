@@ -1,29 +1,23 @@
 import type { InjectableMetaDescriptor, Target } from "jinn/core/njinn/mod.ts";
-import { define, Meta, Scopes, Injectable, Inject } from "jinn/core/njinn/mod.ts";
+import { define, Inject, Injectable, Meta, Module, Scopes } from "jinn/core/njinn/mod.ts";
 import { ControllerMeta, GatewayMetaDescriptor } from "./types.ts";
 import { GateMeta } from "./metadata.ts";
-import { TypeProvider } from "../core/njinn/types.ts";
 
-export { Inject, Injectable };
+export { Inject, Injectable, Module };
 
-export function Module(desc: GatewayMetaDescriptor = {}): ClassDecorator {
+export function Gateway({prefix, controllers}: GatewayMetaDescriptor): ClassDecorator {
   return (target: Target) => {
-    define<GatewayMetaDescriptor>(Meta.Module, {
-      ...{ imports: [], providers: [], exports: [], controllers: [] },
-      ...desc
-    }, target);
-    define<TypeProvider>(Meta.Injectable, {
-      scope: Scopes.Default,
-      token: target,
-      useType: target
+    define<GatewayMetaDescriptor>(GateMeta.Gateway, {
+      prefix: prefix ?? "",
+      controllers
     }, target);
   };
 }
 
 export function Controller(prefix = ""): ClassDecorator {
   return (target: Target) => {
-    define<ControllerMeta>(GateMeta.Controller, { prefix }, target);
-    define<InjectableMetaDescriptor>(Meta.Injectable, { scope: Scopes.Module }, target);
+    define<ControllerMeta>(GateMeta.Controller, {prefix}, target);
+    define<InjectableMetaDescriptor>(Meta.Injectable, {scope: Scopes.Module}, target);
   };
 }
 

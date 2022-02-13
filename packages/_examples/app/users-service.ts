@@ -1,4 +1,4 @@
-import { Injectable } from "packages/core/njinn/decorators.ts";
+import { Injectable } from "jinn/core/njinn/decorators.ts";
 import { Database } from "https://deno.land/x/mongo@v0.29.1/mod.ts";
 
 @Injectable()

@@ -1,6 +1,7 @@
 import type { Target } from "jinn/core/njinn/mod.ts";
 
 export enum GateMeta {
+  Gateway = "xpr:gateway",
   Controller = "xpr:controller",
   Methods = "xpr:methods",
   Middlewares = "xpr:middlewares",
