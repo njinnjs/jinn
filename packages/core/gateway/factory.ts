@@ -1,37 +1,17 @@
-import type { LinkerRegistry, ModuleRef } from "jinn/core/njinn/mod.ts";
-import moduleRef from "jinn/core/it/module-ref.ts";
+import { Ctr, LinkerRegistry } from "../types/njinn.ts";
+import { Logger } from "../../common/logger/dev.ts";
+import linker from "../njinn/linker.ts";
+import GatewayApplication from "./application.ts";
+import ModuleRegistry from "../njinn/module-registry.ts";
+import { GatewayAdapter } from "./types.ts";
 
-export interface GatewayFactoryOptions {
-  host: ModuleRef;
-  registry: LinkerRegistry;
+export interface FactoryOptions {
+  logger: Logger;
+  registry?: LinkerRegistry;
 }
 
-export interface ControllerDescriptor {
-  prefix: string;
-  methods: any[];
-}
-
-export default async function gatewayFactory({ host }: GatewayFactoryOptions) {
-  // let's start with collecting gateway data (controllers)
-  const controllers: any[] = [];
-  for (const h of moduleRef(host)) {
-    // const controllers = (getModuleDescriptor(h.ref).controllers ?? []) as Target[];
-    // for each controller, read its metadata
-    for (const c of controllers) {
-      // register the controller as provider
-      h.provides.register(c);
-      const resolveController = () => h.resolve(c);
-
-      // fetch controller details
-      // const controller = getController(c);
-      // const methods = getMethods(c);
-      // const DT = "design:type";
-      // const DPT = "design:paramtypes";
-      // const DRT = "design:returntype";
-      // console.log(Reflect.getMetadata(DT, (c as Function).prototype, 'sayHello'));
-      // data.push(controller);
-    }
-  }
-
-  console.log(data);
+export default function createGatewayApplication(module: Ctr, adapter: GatewayAdapter, options: FactoryOptions) {
+  const { logger, registry = new ModuleRegistry() } = options;
+  const host = linker({ logger, registry })(module);
+  return new GatewayApplication(host, adapter, { logger, registry });
 }

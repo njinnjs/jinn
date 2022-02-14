@@ -1,9 +1,10 @@
-import type { Func, InjectedMetaParam, ModuleRef, Provider, ProviderRegistry, Target, Token } from "./types.ts";
-import { str } from "jinn/common/utils/mod.ts";
-import { Logger } from "jinn/common/deps/log.ts";
-import { Meta, read, Scopes } from "./metadata.ts";
+import type { Ctr, InjectedMetaParam, ModuleRef, Provider, ProvidingRegistry, Token } from "../types/njinn.ts";
+import { Logger } from "../../common/deps/log.ts";
+import { read } from "../meta/mod.ts";
+import { NjinnKeys, Scopes } from "./decorators.ts";
 
 // todo error handler
+// todo logger as factory to allow lazy init
 
 export default class Host implements ModuleRef {
   /**
@@ -20,63 +21,64 @@ export default class Host implements ModuleRef {
   protected readonly logger: Logger;
 
   constructor(
-    protected readonly module: Target,
+    protected readonly module: Ctr,
     protected readonly imported: ModuleRef[],
-    protected readonly provided: ProviderRegistry,
-    protected readonly exported: ProviderRegistry,
+    protected readonly provided: ProvidingRegistry,
+    protected readonly exported: ProvidingRegistry,
     { levelName, handlers }: Logger,
   ) {
+    // replace with factory
     this.logger = new Logger(this.id, levelName, { handlers });
   }
 
-  get ref(): Target {
+  get ref() {
     return this.module;
   }
 
   get id(): string {
-    return str(this.module);
+    return this.module.name;
   }
 
-  get imports(): ModuleRef[] {
+  get imports() {
     return this.imported;
   }
 
-  get exports(): ProviderRegistry {
+  get exports() {
     return this.exported;
   }
 
-  get provides(): ProviderRegistry {
+  get provides() {
     return this.provided;
   }
 
-  async resolve<T = unknown>(target: Token): Promise<T> {
-    this.logger.debug("resolving %#v", target);
+  async resolve<T = unknown>(token: Token): Promise<T> {
+    this.logger.debug("resolving %#v", token);
 
     // is this target already cached (locally)?
-    if (this.cache.has(target)) {
-      this.logger.debug("token %#v found in cache", target);
-      return this.cache.get(target) as T;
+    if (this.cache.has(token)) {
+      this.logger.debug("token %#v found in cache", token);
+      return this.cache.get(token) as T;
     }
 
     // is this target already cached (globally)?
-    if (Host.global.has(target)) {
-      this.logger.debug("token %#v found in global cache", target);
-      return Host.global.get(target) as T;
+    if (Host.global.has(token)) {
+      this.logger.debug("token %#v found in global cache", token);
+      return Host.global.get(token) as T;
     }
 
     // the search for provider
-    const provider = this.provider(target);
+    const provider = this.provider(token);
 
     // the creation
-    const value = await this.value<T>(provider, target as Target);
+    const value = await this.value<T>(provider, token as Ctr);
 
     // should we cache?!
     switch (provider.scope) {
       case Scopes.Default: // singleton
-        Host.global.set(target, value);
+        Host.global.set(token, value);
         break;
       case Scopes.Module: // each module
-        this.cache.set(target, value);
+        this.cache.set(token, value);
         break;
       case Scopes.None: // new instance for each resolving
         break;
@@ -84,47 +86,49 @@ export default class Host implements ModuleRef {
     return value;
   }
 
-  private provider(target: Token): Provider {
-    this.logger.debug("search for token %#v in local module", target);
-    if (this.provided.has(target)) {
-      this.logger.debug("provider for token %#v found in local providers", target);
-      return this.provides.get(target) as Provider;
+  private provider(token: Token): Provider {
+    this.logger.debug("search for token %#v in local module", token);
+    if (this.provided.has(token)) {
+      this.logger.debug("provider for token %#v found in local providers", token);
+      return this.provides.fetch(token);
     }
     for (const mdl of this.imported) {
-      this.logger.debug("search for token %#v in module %s", target, mdl.id);
-      if (mdl.exports.has(target)) {
-        this.logger.debug("provider for token %#v found in module %s", target, mdl.id);
-        return mdl.provides.get(target) as Provider;
+      this.logger.debug("search for token %#v in module %s", token, mdl.id);
+      if (mdl.exports.has(token)) {
+        this.logger.debug("provider for token %#v found in module %s", token, mdl.id);
+        return mdl.provides.fetch(token);
       }
     }
-    throw new Error(`unable to find provider for ${str(target)}`);
+    throw new Error(`unable to find provider for "${String(token)}"`);
   }
 
-  private async value<T>(provider: Provider, target: Target): Promise<T> {
-    this.logger.debug("providing %j from %s", provider, this.id);
-
+  private async value<T>(provider: Provider, target: Ctr): Promise<T> {
     if (provider.useValue) {
+      this.logger.debug("providing %#v using value provider", target);
       return provider.useValue as T;
     }
 
     if (provider.useFactory) {
-      return await provider.useFactory(this);
+      this.logger.debug("providing %#v using factory provider", target);
+      return await provider.useFactory(this) as Awaited<T>;
     }
 
     if (provider.useType) {
+      this.logger.debug("providing %#v using type provider", target);
       // constructor arguments
-      const ctr: Token[] = read<Target[]>(Meta.Ctr, target, []);
+      const ctr: Token[] = read<Ctr[]>(NjinnKeys.Ctr, target, []);
       if (ctr.length) {
-        // replace with injected tokens
-        const injected = read<InjectedMetaParam[]>(Meta.Params, target, []);
-        for (const { index, value } of injected) {
-          ctr[index] = value;
+        const injected = read<InjectedMetaParam[]>(NjinnKeys.Params, target, []);
+        if (injected.length) {
+          for (const { index, value } of injected) {
+            ctr[index] = value;
+          }
         }
       }
       // resolve dependencies
       const args: unknown[] = await Promise.all(ctr.map((type) => this.resolve(type)));
-      // construct object
-      return Reflect.construct(target as Func, args);
+      // construct type
+      return Reflect.construct(target, args);
     }
 
     this.logger.debug("invalid provider %j", provider);

@@ -1,11 +1,26 @@
-import type { InjectableMetaDescriptor, Target } from "../njinn/mod.ts";
-import { define, Meta, Scopes } from "../njinn/mod.ts";
-import { ControllerMeta, GatewayMetaDescriptor } from "./types.ts";
-import { GatewayMeta } from "./metadata.ts";
+import type { Ctr, Target, TypeProvider } from "../types/njinn.ts";
+import type { Instance, MetadataKey } from "../types/reflect.ts";
+import type {
+  ControllerMetaDescriptor,
+  GatewayMetaDescriptor,
+  MethodMetaDescriptor,
+  MiddlewareMetaDescriptor,
+} from "./types.ts";
+import { define, merge } from "../meta/mod.ts";
+import { NjinnKeys, Scopes } from "../njinn/decorators.ts";
+
+export enum GatewayKeys {
+  Gateway = "xpr:gateway",
+  Controller = "xpr:controller",
+  Methods = "xpr:methods",
+  Middlewares = "xpr:middlewares",
+}
+
+type TPD = TypedPropertyDescriptor<Instance>;
 
 export function Gateway({ prefix, controllers }: GatewayMetaDescriptor): ClassDecorator {
   return (target: Target) => {
-    define<GatewayMetaDescriptor>(GatewayMeta.Gateway, {
+    define<GatewayMetaDescriptor>(GatewayKeys.Gateway, {
       prefix: prefix ?? "",
       controllers,
     }, target);
@@ -14,22 +29,30 @@ export function Gateway({ prefix, controllers }: GatewayMetaDescriptor): ClassDe
 
 export function Controller(prefix = ""): ClassDecorator {
   return (target: Target) => {
-    define<ControllerMeta>(GatewayMeta.Controller, { prefix }, target);
-    define<InjectableMetaDescriptor>(Meta.Injectable, { scope: Scopes.Module }, target);
+    define<ControllerMetaDescriptor>(GatewayKeys.Controller, { prefix }, target);
+    define<TypeProvider>(NjinnKeys.Injectable, {
+      scope: Scopes.Module,
+      token: target,
+      useType: target,
+    }, target);
   };
 }
 
-export function Middleware(...middlewares: Target[]): ClassDecorator & MethodDecorator {
-  return (target: Target, propertyKey?: string | symbol) => {
-    // console.log('** middleware');
-    // addMethodMiddlewares(target, String(propertyKey), middlewares);
+export function Middleware(...middlewares: Ctr[]): ClassDecorator & MethodDecorator {
+  return (target: Target, name?: MetadataKey, descriptor?: TPD) => {
+    if (name && descriptor) {
+      merge<MiddlewareMetaDescriptor>(GatewayKeys.Middlewares, { name: String(name), middlewares }, target.constructor);
+      merge<MiddlewareMetaDescriptor>(GatewayKeys.Middlewares, { name: String(name), middlewares }, descriptor.value);
+    } else {
+      merge<MiddlewareMetaDescriptor>(GatewayKeys.Middlewares, { middlewares }, target);
+    }
   };
 }
 
 export function Get(path = ""): MethodDecorator {
-  return (target: Target, propertyKey: string | symbol) => {
-    console.log("** get");
-    // addMethod(target, { method: "GET", name: String(propertyKey), path, middlewares: [] });
+  return (target: Target, name: MetadataKey, descriptor: TPD) => {
+    merge<MethodMetaDescriptor>(GatewayKeys.Methods, { path, name: String(name), method: 'GET' }, descriptor.value);
+    merge<MethodMetaDescriptor>(GatewayKeys.Methods, { path, name: String(name), method: 'GET' }, target.constructor);
   };
 }
 

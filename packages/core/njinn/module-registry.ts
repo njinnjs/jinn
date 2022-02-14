@@ -1,12 +1,11 @@
-import { Target } from "../reflection/reflection.ts";
-import { LinkerRegistry, ModuleRef } from "./types.ts";
+import type { Ctr, LinkerRegistry, ModuleRef } from "../types/njinn.ts";
 
-export default class ModuleRegistry extends WeakMap<Target, ModuleRef> implements LinkerRegistry {
-  fetch(target: Target): ModuleRef {
+export default class ModuleRegistry extends WeakMap<Ctr, ModuleRef> implements LinkerRegistry {
+  fetch(target: Ctr) {
     return this.get(target) as ModuleRef;
   }
 
-  save(target: Target, ref: ModuleRef): ModuleRef {
+  register(target: Ctr, ref: ModuleRef) {
     this.set(target, ref);
     return ref;
   }

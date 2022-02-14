@@ -1,5 +1,6 @@
-import "xpr/reflect";
-import type { ModuleRef, Target } from "./types.ts";
+import "jinn/reflect";
+import type { Target } from "../types/reflect.ts";
+import type { ModuleRef } from "../types/njinn.ts";
 import linker from "./linker.ts";
 import { assert } from "jinn/testing/mod.ts";
 import { ModuleTest } from "jinn/testing/nginn_testing.ts";

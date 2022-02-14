@@ -1,31 +1,30 @@
-import type { Provider, Target, Token } from "./types.ts";
+import type { Ctr, Provider, ProvidingRegistry, Token, TokenOrProvider } from "../types/njinn.ts";
 import { isCallable } from "jinn/common/utils/mod.ts";
-import { Meta, read } from "./metadata.ts";
+import { read } from "../meta/mod.ts";
+import { NjinnKeys } from "./decorators.ts";
 
-export type Key = Token | Provider;
+const norm = (key: TokenOrProvider): Token => (key as Provider).token ?? key;
 
-const norm = (key: Key): Token => (key as Provider).token ?? key;
-
-export default class ProviderRegistry extends Map<Token, Provider> {
-  constructor(public readonly module: Target) {
+export default class ProviderRegistry extends Map<Token, Provider> implements ProvidingRegistry {
+  constructor(public readonly module: Ctr) {
     super();
   }
 
-  fetch(key: Key): Provider {
+  fetch(key: TokenOrProvider): Provider {
     return this.get(norm(key)) as Provider;
   }
 
-  exists(key: Key): boolean {
+  exists(key: TokenOrProvider): boolean {
     return this.has(norm(key));
   }
 
-  register(key: Key) {
-    const provider = isCallable(key) ? read<Provider>(Meta.Injectable, key) : key as Provider;
+  register(key: TokenOrProvider) {
+    const provider = isCallable(key) ? read<Provider>(NjinnKeys.Injectable, key) : key as Provider;
     this.set(provider.token, provider);
     return this;
   }
 
-  import(registry: ProviderRegistry) {
+  import(registry: ProvidingRegistry) {
     for (const [token, provider] of registry.entries()) {
       if (!this.has(token)) {
         this.set(token, provider);

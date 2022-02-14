@@ -14,6 +14,7 @@ import {
 } from "jinn/common/deps/colors.ts";
 import { format } from "jinn/common/deps/datetime.ts";
 import { sprintf } from "jinn/common/deps/fmt.ts";
+import { LevelName } from "https://deno.land/std@0.125.0/log/levels.ts";
 
 const LEVELS: Record<string, string> = {
   "DEBUG": blue("DBG"),
@@ -22,9 +23,10 @@ const LEVELS: Record<string, string> = {
   "ERROR": red("ERR"),
   "CRITICAL": brightRed("CRT"),
 };
+export { Logger };
 
-export function devLogger() {
-  return new Logger("DEV", "DEBUG", {
+export function devLogger(name: string = "DEV", level: LevelName = "DEBUG") {
+  return new Logger(name, level, {
     handlers: [
       new handlers.ConsoleHandler("DEBUG", {
         formatter: ({ levelName, msg, datetime, args, loggerName }: LogRecord) => {

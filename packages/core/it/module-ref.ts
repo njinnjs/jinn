@@ -1,4 +1,4 @@
-import type { ModuleRef } from "../njinn/types.ts";
+import type { ModuleRef } from "../types/njinn.ts";
 
 export default function* moduleRef(host: ModuleRef): Generator<ModuleRef> {
   yield host;
