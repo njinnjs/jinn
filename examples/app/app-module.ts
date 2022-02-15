@@ -22,5 +22,5 @@ import LogMiddleware from "./log-middleware.ts";
   controllers: [AppController],
   middlewares: [LogMiddleware],
 })
-export class AppModule {
+export default class AppModule {
 }
