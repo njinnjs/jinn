@@ -1,76 +1,45 @@
-import type { Ctr, Target, TypeProvider } from "../types/njinn.ts";
-import type { Instance, MetadataKey } from "../types/reflect.ts";
-import type {
-  ControllerMetaDescriptor,
-  GatewayMetaDescriptor,
-  MethodMetaDescriptor,
-  MiddlewareMetaDescriptor,
-} from "./types.ts";
-import { define, merge } from "../meta/mod.ts";
-import { NjinnKeys, Scopes } from "../njinn/decorators.ts";
+import type { Ctr, ModuleMetaDescriptor, Target } from "../types/njinn.ts";
+import type { MetadataKey } from "../types/reflect.ts";
+import type { GatewayMetaDescriptor } from "../types/gateway.ts";
+import { markInjectable, markModule, Scopes } from "../njinn/meta.ts";
+import { markAction, markController, markGateway, markMiddleware } from "./meta.ts";
 
-export enum GatewayKeys {
-  Gateway = "xpr:gateway",
-  Controller = "xpr:controller",
-  Methods = "xpr:methods",
-  Middlewares = "xpr:middlewares",
+export type FeatureDescriptor = GatewayMetaDescriptor & Partial<ModuleMetaDescriptor> & { middlewares?: Ctr[] };
+
+export function Feature({ prefix, controllers, middlewares, ...module }: FeatureDescriptor): ClassDecorator {
+  return (target: Target) => {
+    markModule(target, module);
+    markInjectable(target);
+    markGateway(target, { prefix, controllers });
+    middlewares && markMiddleware(target, { middlewares });
+  };
 }
 
-type TPD = TypedPropertyDescriptor<Instance>;
-
-export function Gateway({ prefix, controllers }: GatewayMetaDescriptor): ClassDecorator {
+export function Gateway(descriptor: GatewayMetaDescriptor): ClassDecorator {
   return (target: Target) => {
-    define<GatewayMetaDescriptor>(GatewayKeys.Gateway, {
-      prefix: prefix ?? "",
-      controllers,
-    }, target);
+    markGateway(target, descriptor);
   };
 }
 
 export function Controller(prefix = ""): ClassDecorator {
   return (target: Target) => {
-    define<ControllerMetaDescriptor>(GatewayKeys.Controller, { prefix }, target);
-    define<TypeProvider>(NjinnKeys.Injectable, {
-      scope: Scopes.Module,
-      token: target,
-      useType: target,
-    }, target);
+    markController(target, prefix);
+    markInjectable(target, { scope: Scopes.Module });
   };
 }
 
 export function Middleware(...middlewares: Ctr[]): ClassDecorator & MethodDecorator {
-  return (target: Target, name?: MetadataKey, descriptor?: TPD) => {
-    if (name && descriptor) {
-      merge<MiddlewareMetaDescriptor>(GatewayKeys.Middlewares, { name: String(name), middlewares }, target.constructor);
-      merge<MiddlewareMetaDescriptor>(GatewayKeys.Middlewares, { name: String(name), middlewares }, descriptor.value);
+  return (target: Target, name?: MetadataKey) => {
+    if (name) {
+      markMiddleware(target.constructor, { middlewares, name: String(name) });
     } else {
-      merge<MiddlewareMetaDescriptor>(GatewayKeys.Middlewares, { middlewares }, target);
+      markMiddleware(target, { middlewares });
     }
   };
 }
 
 export function Get(path = ""): MethodDecorator {
-  return (target: Target, name: MetadataKey, descriptor: TPD) => {
-    merge<MethodMetaDescriptor>(GatewayKeys.Methods, { path, name: String(name), method: 'GET' }, descriptor.value);
-    merge<MethodMetaDescriptor>(GatewayKeys.Methods, { path, name: String(name), method: 'GET' }, target.constructor);
+  return (target: Target, name: MetadataKey) => {
+    markAction(target.constructor, { path, name: String(name), method: "GET" });
   };
 }
-
-//
-// export function Post(path = ""): MethodDecorator {
-//   return (target: Target, propertyKey: string | symbol) => {
-//     addMethod(target, { method: "POST", name: String(propertyKey), path });
-//   };
-// }
-//
-// export function Put(path = ""): MethodDecorator {
-//   return (target: Target, propertyKey: string | symbol) => {
-//     addMethod(target, { method: "PUT", name: String(propertyKey), path });
-//   };
-// }
-//
-// export function Delete(path = ""): MethodDecorator {
-//   return (target: Target, propertyKey: string | symbol) => {
-//     addMethod(target, { method: "DELETE", name: String(propertyKey), path });
-//   };
-// }

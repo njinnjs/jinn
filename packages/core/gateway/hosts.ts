@@ -1,12 +1,13 @@
-import {
+import type {
   Controlled,
   ControllerDescriptor,
   FeatureDescriptor,
   GatewayMiddleware,
+  MethodMetaDescriptor,
   Routed,
   RoutedDescriptor,
-} from "./types.ts";
-import { Instance } from "../types/reflect.ts";
+} from "../types/gateway.ts";
+import type { Instance } from "../types/reflect.ts";
 
 export abstract class RoutedHost<Descriptor extends RoutedDescriptor> implements Routed<Descriptor> {
   readonly middlewares: [GatewayMiddleware, string?][] = [];
@@ -19,12 +20,12 @@ export abstract class RoutedHost<Descriptor extends RoutedDescriptor> implements
   }
 }
 
-export class MethodHost extends RoutedHost<RoutedDescriptor> {
-
-}
-
 export class ControllerHost extends RoutedHost<ControllerDescriptor> {
-  methods: MethodHost[] = [];
+  readonly methods: [MethodMetaDescriptor, unknown][] = [];
+
+  set method([desc, params]: [MethodMetaDescriptor, unknown]) {
+    this.methods.push([desc, params]);
+  }
 }
 
 export class FeatureHost extends RoutedHost<FeatureDescriptor> implements Controlled {

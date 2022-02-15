@@ -1,7 +1,7 @@
-import { FeatureHost } from "./hosts.ts";
-import { GatewayAdapter } from "./types.ts";
+import type { FeatureHost } from "./hosts.ts";
+import type GatewayApplication from "./application.ts";
 
-export default async function mount(adapter: GatewayAdapter, features: FeatureHost[]) {
+export default async function mount({ adapter }: GatewayApplication, features: FeatureHost[]) {
   // todo add options for adapter or should it come configured?!
   await adapter.init();
 

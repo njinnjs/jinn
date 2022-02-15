@@ -1,7 +1,6 @@
 import type { Ctr, Provider, ProvidingRegistry, Token, TokenOrProvider } from "../types/njinn.ts";
-import { isCallable } from "jinn/common/utils/mod.ts";
-import { read } from "../meta/mod.ts";
-import { NjinnKeys } from "./decorators.ts";
+import { isCallable } from "../../common/utils/mod.ts";
+import { readInjectable } from "./meta.ts";
 
 const norm = (key: TokenOrProvider): Token => (key as Provider).token ?? key;
 
@@ -19,7 +18,7 @@ export default class ProviderRegistry extends Map<Token, Provider> implements Pr
   }
 
   register(key: TokenOrProvider) {
-    const provider = isCallable(key) ? read<Provider>(NjinnKeys.Injectable, key) : key as Provider;
+    const provider = isCallable(key) ? readInjectable(key) : key as Provider;
     this.set(provider.token, provider);
     return this;
   }

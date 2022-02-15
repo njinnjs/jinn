@@ -1,41 +1,48 @@
-import type { Ctr, ModuleRef } from "../types/njinn.ts";
+import type { Ctr, ModuleRef, Target } from "../types/njinn.ts";
 import type {
   ControllerDescriptor,
-  ControllerMetaDescriptor,
   FeatureDescriptor,
-  GatewayMetaDescriptor,
-  MethodMetaDescriptor,
+  MethodDescriptor,
   MiddlewareMetaDescriptor,
-} from "./types.ts";
-import { read } from "../meta/mod.ts";
+} from "../types/gateway.ts";
+import { GatewayApplicationContent } from "../types/gateway.ts";
 import moduleRef from "../it/module-ref.ts";
-import { GatewayKeys } from "./decorators.ts";
+import { readActions, readController, readGateway, readMiddlewares } from "./meta.ts";
+
+const noName = () => (desc: MiddlewareMetaDescriptor) => !desc.name;
+const byName = (name: string) => (desc: MiddlewareMetaDescriptor) => name === desc.name;
+
+const getMiddlewares = (target: Target, filterBy = noName()) =>
+  readMiddlewares(target)
+    .filter(filterBy)
+    .map((m) => m.middlewares)
+    .flat();
 
 export function setupController(module: ModuleRef, target: Ctr): ControllerDescriptor {
   module.provides.register(target);
-  const ctrl = read<ControllerMetaDescriptor>(GatewayKeys.Controller, target);
-  const prefix = ctrl.prefix;
-  const middlewares = read<MiddlewareMetaDescriptor[]>(GatewayKeys.Middlewares, target, []);
-  const methods = read<MethodMetaDescriptor[]>(GatewayKeys.Methods, target, []);
-  return { target, prefix, middlewares, methods };
+  const methods: MethodDescriptor[] = readActions(target).map(
+    (action) => ({ ...action, middlewares: getMiddlewares(target, byName(action.name)) }),
+  );
+  return {
+    target,
+    prefix: readController(target).prefix,
+    middlewares: getMiddlewares(target),
+    methods,
+  };
 }
 
-export function setupFeature(module: ModuleRef, desc: GatewayMetaDescriptor): FeatureDescriptor {
-  const target = module.ref;
-  const prefix = String(desc.prefix);
-  const middlewares = read<MiddlewareMetaDescriptor[]>(GatewayKeys.Middlewares, target, []);
-  const controllers = desc.controllers.map((c) => setupController(module, c));
-  return { target, prefix, middlewares, controllers, module };
-}
-
-export function readFeature(module: ModuleRef): [ModuleRef, GatewayMetaDescriptor, null | number] {
-  const desc = read<GatewayMetaDescriptor>(GatewayKeys.Gateway, module.ref);
-  return [module, desc, desc?.controllers.length];
-}
-
-export default function setup(host: ModuleRef): FeatureDescriptor[] {
-  return [...moduleRef(host)]
-    .map(readFeature)
-    .filter(([_m, _d, l]) => l)
-    .map(([module, desc]) => setupFeature(module, desc));
+export default function setup({ host }: GatewayApplicationContent): FeatureDescriptor[] {
+  const features: FeatureDescriptor[] = [];
+  for (const module of moduleRef(host)) {
+    const desc = readGateway(module.ref);
+    if (!desc) {
+      continue;
+    }
+    const target = module.ref;
+    const prefix = String(desc.prefix);
+    const middlewares = getMiddlewares(target);
+    const controllers = desc.controllers.map((c: Ctr) => setupController(module, c));
+    features.push({ target, prefix, middlewares, controllers, module });
+  }
+  return features;
 }

@@ -1,19 +1,11 @@
 import type { NextFunction, Opine, OpineRequest, OpineResponse } from "./deps.ts";
 import { opine } from "./deps.ts";
-import type {
-  Controlled,
-  ControllerDescriptor,
-  FeatureDescriptor,
-  GatewayAdapter,
-  GatewayContext,
-  GatewayMiddleware,
-  Routed,
-} from "../../core/gateway/types.ts";
-import { Instance } from '../../core/types/reflect.ts';
-import { HTTPOptions, RequestHandler } from 'https://deno.land/x/opine@2.1.1/src/types.ts';
+import type { GatewayAdapter, GatewayContext, GatewayMiddleware } from "../../core/gateway/types.ts";
+import { Instance } from "../../core/types/reflect.ts";
+import { HTTPOptions, RequestHandler } from "https://deno.land/x/opine@2.1.1/src/types.ts";
+import { ControllerHost, FeatureHost } from "../../core/gateway/hosts.ts";
 
 export type OpineContext = GatewayContext<OpineRequest, OpineResponse>;
-export type RouterInput = Routed<ControllerDescriptor & FeatureDescriptor> & Partial<Controlled>;
 
 const noName = ([_, n]: [unknown, string?]) => !n;
 const withName = (name: string) => ([_, n]: [unknown, string?]) => n === name;
@@ -33,14 +25,16 @@ export default class OpineAdapter implements GatewayAdapter<Opine> {
     return this.instance?.listen(opts);
   }
 
-  router(routed: RouterInput): Opine {
+  router(routed: FeatureHost & ControllerHost): Opine {
     const router = opine();
-    const toMiddleware = ([m]: [GatewayMiddleware, string?]) => this.middleware(m)
+    const toMiddleware = ([m]: [GatewayMiddleware, string?]) => this.middleware(m);
 
     // those with no name are the router level middlewares
-    routed.middlewares.filter(noName).map(toMiddleware).forEach(m => router.use(m));
+    routed.middlewares.filter(noName).map(toMiddleware).forEach((m) => router.use(m));
 
-    (routed.desc?.methods ?? []).forEach(({name, path, method}) => {
+    console.log(">>", routed.methods);
+    // todo methods with their inputs factories should be prepared in resolving time
+    (routed.desc?.methods ?? []).forEach(({ name, path, method }) => {
       // find all middlewares for this method
       const mws = routed.middlewares.filter(withName(name)).map(toMiddleware);
       // @ts-ignore index access to a named method
@@ -69,8 +63,7 @@ export default class OpineAdapter implements GatewayAdapter<Opine> {
     };
   }
 
-
   context(request: OpineRequest, response: OpineResponse): OpineContext {
-    return {request, response};
+    return { request, response };
   }
 }

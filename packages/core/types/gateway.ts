@@ -1,6 +1,6 @@
-import type { Ctr, Instance } from "../types/reflect.ts";
-import { ModuleRef } from "../types/njinn.ts";
-import { ControllerHost } from "./hosts.ts";
+import type { Ctr, Instance } from "./reflect.ts";
+import { ModuleRef } from "./njinn.ts";
+import ModuleRegistry from "../njinn/module-registry.ts";
 
 export interface GatewayContext<Req = Instance, Res = Instance> {
   request: Req;
@@ -23,11 +23,15 @@ export type MethodMetaDescriptor = { path: string; name: string; method: string 
 export interface RoutedDescriptor {
   target: Ctr;
   prefix: string;
-  middlewares: MiddlewareMetaDescriptor[];
+  middlewares: Ctr[];
+}
+
+export interface MethodDescriptor extends MethodMetaDescriptor {
+  middlewares: Ctr[];
 }
 
 export interface ControllerDescriptor extends RoutedDescriptor {
-  methods: MethodMetaDescriptor[];
+  methods: MethodDescriptor[];
 }
 
 export interface FeatureDescriptor extends RoutedDescriptor {
@@ -44,7 +48,7 @@ export interface Routed<Descriptor extends RoutedDescriptor> {
 }
 
 export interface Controlled {
-  readonly controllers: ControllerHost[];
+  readonly controllers: any[];
 }
 
 // adapter
@@ -82,20 +86,10 @@ export interface GatewayAdapter<Router = Instance, InitOptions = any, StartOptio
   listen(options: StartOptions): unknown | Promise<unknown>;
 }
 
-// lifecycle
+// application
 
-export interface OnSetup {
-  onSetup(): void;
-}
-
-export interface OnResolve {
-  onResolve(): void;
-}
-
-export interface OnMount {
-  onMount(): void;
-}
-
-export interface OnListen {
-  onListen(): void;
+export interface GatewayApplicationContent {
+  readonly host: ModuleRef;
+  readonly adapter: GatewayAdapter;
+  readonly registry: ModuleRegistry;
 }

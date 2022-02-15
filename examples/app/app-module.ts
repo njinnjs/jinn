@@ -1,19 +1,26 @@
 import { Gateway, Module } from "jinn/core/mod.ts";
 import { UsersModule } from "./users-module.ts";
 import { AppController } from "./app-controller.ts";
-import { Middleware } from "../../packages/core/gateway/decorators.ts";
-import { Scopes } from "../../packages/core/njinn/decorators.ts";
-import LogMiddleware from './log-middleware.ts';
+import { Feature, Middleware } from "../../packages/core/gateway/decorators.ts";
+import LogMiddleware from "./log-middleware.ts";
 
-@Module({
+// @Module({
+//   imports: [UsersModule],
+//   providers: [
+//     LogMiddleware,
+//   ],
+// })
+// @Gateway({
+//   controllers: [AppController],
+// })
+// @Middleware(LogMiddleware)
+@Feature({
   imports: [UsersModule],
   providers: [
-    LogMiddleware
+    LogMiddleware,
   ],
-})
-@Gateway({
   controllers: [AppController],
+  middlewares: [LogMiddleware],
 })
-@Middleware(LogMiddleware)
 export class AppModule {
 }

@@ -59,7 +59,10 @@ export interface ModuleRef {
 }
 
 // linker
-export type LinkerRegistry =
-  & WeakMap<Ctr, ModuleRef>
-  & { fetch: (target: Ctr) => ModuleRef; register: (target: Ctr, ref: ModuleRef) => ModuleRef };
+export interface LinkerRegistry extends WeakMap<Ctr, ModuleRef> {
+  fetch(target: Ctr): ModuleRef;
+
+  register(target: Ctr, ref: ModuleRef): ModuleRef;
+}
+
 export type LinkerOptions = { registry?: LinkerRegistry; logger?: Logger };

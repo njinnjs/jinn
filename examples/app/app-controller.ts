@@ -1,5 +1,5 @@
 import { Controller, Get, Middleware } from "jinn/core/mod.ts";
-import LogMiddleware from './log-middleware.ts';
+import LogMiddleware from "./log-middleware.ts";
 
 @Middleware(LogMiddleware)
 @Controller("/app")

@@ -13,5 +13,5 @@ export interface FactoryOptions {
 export default function createGatewayApplication(module: Ctr, adapter: GatewayAdapter, options: FactoryOptions) {
   const { logger, registry = new ModuleRegistry() } = options;
   const host = linker({ logger, registry })(module);
-  return new GatewayApplication(host, adapter, { logger, registry });
+  return new GatewayApplication(host, adapter, registry, { logger });
 }

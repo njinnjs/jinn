@@ -1,23 +1,16 @@
-import type {
-  Ctr,
-  CtrOrProvider,
-  LinkerOptions,
-  ModuleMetaDescriptor,
-  ModuleRef,
-  ProvidingRegistry,
-} from "../types/njinn.ts";
+import type { Ctr, CtrOrProvider, LinkerOptions, ModuleRef, ProvidingRegistry } from "../types/njinn.ts";
 import { getLogger } from "../../common/deps/log.ts";
-import { read } from "../meta/mod.ts";
-import { NjinnKeys } from "./decorators.ts";
+import { readModule } from "./meta.ts";
 import ProviderRegistry from "./provider-registry.ts";
 import ModuleRegistry from "./module-registry.ts";
 import Host from "./host.ts";
 
-export default function linker(options: LinkerOptions = {}) {
+export default function linker(target: Ctr, options: LinkerOptions = {}) {
   // todo use internal get logger factory function
   const { registry = new ModuleRegistry(), logger = getLogger() } = options;
-  return function link(target: Ctr): ModuleRef {
-    const { imports, providers, exports } = read<ModuleMetaDescriptor>(NjinnKeys.Module, target);
+
+  const link = (target: Ctr): ModuleRef => {
+    const { imports, providers, exports } = readModule(target);
 
     const imported: ModuleRef[] = imports.map((m: Ctr) => registry.has(m) ? registry.fetch(m) : link(m));
 
@@ -41,4 +34,6 @@ export default function linker(options: LinkerOptions = {}) {
 
     return registry.register(target, new Host(target as Ctr, imported, provided, exported, logger));
   };
+
+  return link(target);
 }

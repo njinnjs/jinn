@@ -1,6 +1,6 @@
 import { Database, MongoClient } from "https://deno.land/x/mongo@v0.29.1/mod.ts";
 import type { FactoryProvider } from "jinn/core/types/njinn.ts";
-import { Scopes } from "../../../packages/core/njinn/decorators.ts";
+import { Scopes } from "../../../packages/core/njinn/meta.ts";
 
 const DbProvider: FactoryProvider<Database> = {
   token: Database,

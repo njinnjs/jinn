@@ -5,58 +5,53 @@ import setup from "./setup.ts";
 import resolve from "./resolve.ts";
 import mount from "./mount.ts";
 import { GatewayAdapter } from "./types.ts";
+import { Emitter } from "../../common/emitter/mod.ts";
+import { GatewayApplicationContent } from "../types/gateway.ts";
 
-export interface OnSetup {
-  onSetup(): void;
-}
-
-export interface OnResolve {
-  onResolve(): void;
-}
-
-export interface OnMount {
-  onMount(): void;
-}
+// todo error handler
+// todo register global error or system events handlers
 
 export interface GatewayApplicationOptions {
-  registry: ModuleRegistry;
   logger: Logger;
 }
 
-export default class GatewayApplication implements OnSetup, OnResolve, OnMount {
+export interface GatewayListenOptions {
+  [key: string]: string | number;
+}
+
+export enum GatewayEvents {
+  OnSetup = "setup",
+  OnResolve = "resolve",
+  OnMount = "mount",
+  OnListen = "listen",
+  OnShutdown = "shutdown",
+}
+
+export default class GatewayApplication<Listen extends GatewayListenOptions = GatewayListenOptions> extends Emitter
+  implements GatewayApplicationContent {
   constructor(
     public readonly host: ModuleRef,
     public readonly adapter: GatewayAdapter,
+    public readonly registry: ModuleRegistry,
     public readonly options: GatewayApplicationOptions,
   ) {
+    super();
   }
 
   async init() {
-    const registry = this.options.registry;
-    const adapter = this.adapter;
+    const features = setup(this);
+    this.emit(GatewayEvents.OnSetup, features);
 
-    const features = setup(this.host);
-    this.onSetup();
+    console.log(features[0].controllers);
+    const resolved = await resolve(this, features);
+    this.emit(GatewayEvents.OnResolve, resolved);
 
-    const resolved = await resolve({features, registry});
-    this.onResolve();
-
-    await mount(adapter, resolved);
-    this.onMount();
-
-    // console.log(resolved);
+    // const app = await mount(this, resolved);
+    // this.emit(GatewayEvents.OnMount, app);
   }
 
-  async listen() {
-    await this.adapter.listen({port: 3333, hostname: '0.0.0.0'});
-  }
-
-  onSetup() {
-  }
-
-  onResolve() {
-  }
-
-  onMount() {
+  async listen(options?: Listen) {
+    await this.adapter.listen(options);
+    this.emit(GatewayEvents.OnListen, options);
   }
 }
