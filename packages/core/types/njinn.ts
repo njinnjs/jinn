@@ -38,22 +38,18 @@ export interface ProvidingRegistry extends Map<Token, Provider> {
 }
 
 // module
-export interface ModuleMetaDescriptor {
+export interface ModuleMetaDescriptor<P = CtrOrProvider, E = TokenOrProvider> {
   imports: Ctr[];
-  providers: CtrOrProvider[];
-  exports: CtrOrProvider[];
+  providers: P[];
+  exports: E[];
 }
 
 export interface ModuleRef {
-  get id(): string;
-
-  get ref(): Ctr;
-
-  get imports(): ModuleRef[];
-
-  get exports(): ProvidingRegistry;
-
-  get provides(): ProvidingRegistry;
+  id: string;
+  ref: Ctr;
+  imports: ModuleRef[];
+  exports: ProvidingRegistry;
+  provides: ProvidingRegistry;
 
   resolve<T = unknown>(target: Token): Promise<T>;
 }

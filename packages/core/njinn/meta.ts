@@ -1,14 +1,16 @@
-import { Target } from "../reflection/reflection.ts";
 import {
+  AnyProvider,
   Ctr,
   InjectableMetaDescriptor,
   InjectedMetaParam,
   ModuleMetaDescriptor,
   Provider,
+  Target,
   Token,
   TypeProvider,
 } from "../types/njinn.ts";
 import { define, merge, read } from "../meta/mod.ts";
+import strategy, { ResolvingStrategy } from "./resolver.ts";
 
 export enum Scopes {
   Default = "Default",
@@ -21,6 +23,20 @@ export enum NjinnKeys {
   Module = "xpr:modules",
   Params = "xpr:params",
   Injectable = "xpr:injectable",
+}
+
+// todo assert contain injectable
+const normalizeProviders = (p: AnyProvider | Ctr): Provider =>
+  (typeof p === "function" ? readInjectable(p) : p) as Provider;
+
+const normalizeExports = (p: any) => Object.hasOwn(p, "token") ? p.token : p;
+
+export function readInjectableStrategy(target: Target) {
+  return strategy(read<Provider>(NjinnKeys.Injectable, target));
+}
+
+export function readMdl(target: Target) {
+  return { ...readModule(target), resolver: strategy(read<Provider>(NjinnKeys.Injectable, target)) };
 }
 
 export function readModule(target: Target) {
@@ -46,9 +62,17 @@ export function readCtrParams(target: Target): Token[] {
 
 export function markModule(target: Target, mark: Partial<ModuleMetaDescriptor>) {
   define<ModuleMetaDescriptor>(NjinnKeys.Module, {
-    ...{ imports: [], providers: [], exports: [] },
+    ...{ imports: [], exports: [], providers: [] },
     ...mark,
   }, target);
+  // const imports = mark.imports ?? [];
+  // const providers = (mark.providers ?? []).map(normalizeProviders).map(strategy);
+  // const exports = (mark.exports ?? []).map(normalizeExports);
+  // define<ModuleMetaDescriptor<ResolvingStrategy, Token>>(NjinnKeys.Module, {
+  //   imports,
+  //   providers,
+  //   exports,
+  // }, target);
 }
 
 export function markInjectable(target: Target, mark?: Partial<InjectableMetaDescriptor>) {

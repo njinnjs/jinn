@@ -1,6 +1,8 @@
-import type { Ctr, ModuleRef, Provider, ProvidingRegistry, Token } from "../types/njinn.ts";
+import type { Ctr, ModuleRef, ProvidingRegistry, Token } from "../types/njinn.ts";
 import { Logger } from "../../common/deps/log.ts";
-import { readCtrParams, Scopes } from "./meta.ts";
+import { Scopes } from "./meta.ts";
+import strategy from "./resolver.ts";
+import scanner from "./scanner.ts";
 
 // todo error handler
 // todo logger as factory to allow lazy init
@@ -8,17 +10,17 @@ import { readCtrParams, Scopes } from "./meta.ts";
 export default class Host implements ModuleRef {
   private static readonly global = new Map<Token, unknown>();
   private readonly cache = new Map<Token, unknown>();
-  protected readonly logger: Logger;
+  protected readonly logger: Logger = new Logger("host", "DEBUG");
 
   constructor(
-    protected readonly module: Ctr,
-    protected readonly imported: ModuleRef[],
-    protected readonly provided: ProvidingRegistry,
-    protected readonly exported: ProvidingRegistry,
-    { levelName, handlers }: Logger,
+    private readonly module: Ctr,
+    public readonly imports: ModuleRef[],
+    public readonly provides: ProvidingRegistry,
+    public readonly exports: ProvidingRegistry,
+    l?: Logger,
   ) {
     // replace with factory
-    this.logger = new Logger(this.id, levelName, { handlers });
+    // this.logger = new Logger(this.id, levelName, { handlers });
   }
 
   get ref() {
@@ -27,18 +29,6 @@ export default class Host implements ModuleRef {
 
   get id(): string {
     return this.module.name;
-  }
-
-  get imports() {
-    return this.imported;
-  }
-
-  get exports() {
-    return this.exported;
-  }
-
-  get provides() {
-    return this.provided;
   }
 
   async resolve<T = unknown>(token: Token): Promise<T> {
@@ -56,12 +46,10 @@ export default class Host implements ModuleRef {
       return Host.global.get(token) as T;
     }
 
-    // the search for provider
-    const provider = this.provider(token);
+    const [at, provider] = scanner(this, token);
+    this.logger.debug("provider for token %#v found in %s: %#v", token, at.ref, provider);
 
-    // the creation
-    const value = await this.value<T>(provider, token as Ctr);
-
+    const value = await strategy(provider).resolve<T>(this);
     // should we cache?!
     switch (provider.scope) {
       case Scopes.Default: // singleton
@@ -74,42 +62,5 @@ export default class Host implements ModuleRef {
         break;
     }
     return value;
-  }
-
-  private provider(token: Token): Provider {
-    this.logger.debug("search for token %#v in local providers", token);
-    if (this.provided.has(token)) {
-      this.logger.debug("provider for token %#v found in local providers", token);
-      return this.provides.fetch(token);
-    }
-    for (const mdl of this.imported) {
-      this.logger.debug("search for token %#v in module %s", token, mdl.id);
-      if (mdl.exports.has(token)) {
-        this.logger.debug("provider for token %#v found in module %s", token, mdl.id);
-        return mdl.provides.fetch(token);
-      }
-    }
-    throw new Error(`unable to find provider for "${String(token)}"`);
-  }
-
-  private async value<T>(provider: Provider, target: Ctr): Promise<T> {
-    if (provider.useValue) {
-      this.logger.debug("providing %#v using value provider", target);
-      return provider.useValue as T;
-    }
-
-    if (provider.useFactory) {
-      this.logger.debug("providing %#v using factory provider", target);
-      return await provider.useFactory(this) as Awaited<T>;
-    }
-
-    if (provider.useType) {
-      this.logger.debug("providing %#v using type provider", target);
-      const args: unknown[] = await Promise.all(readCtrParams(target).map((type: Token) => this.resolve(type)));
-      return Reflect.construct(target, args);
-    }
-
-    this.logger.debug("invalid provider %j", provider);
-    throw new Error(`invalid provider`);
   }
 }

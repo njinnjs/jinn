@@ -1,12 +1,10 @@
-import type { Ctr, ModuleMetaDescriptor, Target } from "../types/njinn.ts";
+import type { Ctr, Target } from "../types/njinn.ts";
 import type { MetadataKey } from "../types/reflect.ts";
-import type { GatewayMetaDescriptor } from "../types/gateway.ts";
+import type { FeatureMetaDescriptor, GatewayMetaDescriptor } from "../types/gateway.ts";
 import { markInjectable, markModule, Scopes } from "../njinn/meta.ts";
 import { markAction, markController, markGateway, markMiddleware } from "./meta.ts";
 
-export type FeatureDescriptor = GatewayMetaDescriptor & Partial<ModuleMetaDescriptor> & { middlewares?: Ctr[] };
-
-export function Feature({ prefix, controllers, middlewares, ...module }: FeatureDescriptor): ClassDecorator {
+export function Feature({ prefix, controllers, middlewares, ...module }: FeatureMetaDescriptor): ClassDecorator {
   return (target: Target) => {
     markModule(target, module);
     markInjectable(target);

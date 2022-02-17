@@ -2,7 +2,7 @@ import { Ctr, LinkerRegistry } from "../types/njinn.ts";
 import { Logger } from "../../common/logger/dev.ts";
 import linker from "../njinn/linker.ts";
 import GatewayApplication from "./application.ts";
-import ModuleRegistry from "../njinn/module-registry.ts";
+import ModuleRegistry from "../njinn/registry/module-registry.ts";
 import { GatewayAdapter } from "./types.ts";
 
 export interface FactoryOptions {

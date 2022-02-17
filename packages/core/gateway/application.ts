@@ -1,4 +1,4 @@
-import ModuleRegistry from "../njinn/module-registry.ts";
+import ModuleRegistry from "../njinn/registry/module-registry.ts";
 import { Logger } from "https://deno.land/std@0.125.0/log/logger.ts";
 import { ModuleRef } from "../types/njinn.ts";
 import setup from "./setup.ts";

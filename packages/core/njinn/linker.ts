@@ -1,26 +1,30 @@
-import type { Ctr, CtrOrProvider, LinkerOptions, ModuleRef, ProvidingRegistry } from "../types/njinn.ts";
+import type { Ctr, CtrOrProvider, LinkerOptions, ModuleRef, Token } from "../types/njinn.ts";
 import { getLogger } from "../../common/deps/log.ts";
-import { readModule } from "./meta.ts";
+import { readMdl } from "./meta.ts";
 import ProviderRegistry from "./provider-registry.ts";
-import ModuleRegistry from "./module-registry.ts";
+import ModuleRegistry from "./registry/module-registry.ts";
 import Host from "./host.ts";
+import { ResolvingStrategy } from "./resolver.ts";
+import { TokenOrProvider } from "../types/njinn.ts";
+import ResolverRegistry from "./registry/resolver-registry.ts";
+
+const register = (r: ResolverRegistry, s: ResolvingStrategy): ResolverRegistry => r.register(s);
 
 export default function linker(target: Ctr, options: LinkerOptions = {}) {
   // todo use internal get logger factory function
   const { registry = new ModuleRegistry(), logger = getLogger() } = options;
 
   const link = (target: Ctr): ModuleRef => {
-    const { imports, providers, exports } = readModule(target);
+    const { imports, providers, exports, resolver } = readMdl(target);
 
     const imported: ModuleRef[] = imports.map((m: Ctr) => registry.has(m) ? registry.fetch(m) : link(m));
 
-    const provided: ProviderRegistry = providers.reduce(
-      (r: ProvidingRegistry, p: CtrOrProvider): ProviderRegistry => r.register(p),
-      new ProviderRegistry(target).register(target),
-    );
+    const provided: ResolversRegistry = providers.reduce(register, new ResolversRegistry(target, resolver));
 
+    for (const e of exports) {
+    }
     const exported = exports.reduce(
-      (r: ProvidingRegistry, p: CtrOrProvider) => {
+      (r: ResolversRegistry, p: CtrOrProvider) => {
         if (provided.exists(p)) {
           return r.register(p);
         }
@@ -29,7 +33,7 @@ export default function linker(target: Ctr, options: LinkerOptions = {}) {
         }
         throw new Error(`unable to export ${String(p)}`);
       },
-      new ProviderRegistry(target).register(provided.fetch(target)),
+      new ResolversRegistry(target, resolver),
     );
 
     return registry.register(target, new Host(target as Ctr, imported, provided, exported, logger));

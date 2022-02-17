@@ -3,7 +3,7 @@ import type { ModuleRef, Token } from "../types/njinn.ts";
 import type { IApplication } from "../types/application.ts";
 import { getLogger, Logger } from "../../common/deps/log.ts";
 import linker from "../njinn/linker.ts";
-import ModuleRegistry from "../njinn/module-registry.ts";
+import ModuleRegistry from "../njinn/registry/module-registry.ts";
 
 export interface CtxApplicationOptions {
   logger: Logger;

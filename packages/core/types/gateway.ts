@@ -1,6 +1,6 @@
 import type { Ctr, Instance } from "./reflect.ts";
-import { ModuleRef } from "./njinn.ts";
-import ModuleRegistry from "../njinn/module-registry.ts";
+import { ModuleMetaDescriptor, ModuleRef } from "./njinn.ts";
+import ModuleRegistry from "../njinn/registry/module-registry.ts";
 
 export interface GatewayContext<Req = Instance, Res = Instance> {
   request: Req;
@@ -14,10 +14,14 @@ export interface GatewayMiddleware {
 }
 
 // metadata descriptors
-export type GatewayMetaDescriptor = { prefix?: string; controllers: Ctr[] };
+export type MethodMetaDescriptor = { path: string; name: string; method: string };
 export type MiddlewareMetaDescriptor = { middlewares: Ctr[]; instances?: Instance[]; name?: string };
 export type ControllerMetaDescriptor = { prefix: string };
-export type MethodMetaDescriptor = { path: string; name: string; method: string };
+export type GatewayMetaDescriptor = { prefix?: string; controllers: Ctr[] };
+export type FeatureMetaDescriptor =
+  & GatewayMetaDescriptor
+  & MiddlewareMetaDescriptor
+  & ModuleMetaDescriptor;
 
 // descriptors
 export interface RoutedDescriptor {
