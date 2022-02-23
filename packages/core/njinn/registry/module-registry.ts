@@ -7,8 +7,15 @@ export default class ModuleRegistry extends WeakMap<Ctr, ModuleRef> {
     return this.get(target) as ModuleRef;
   }
 
-  register(target: Ctr, ref: ModuleRef) {
+  register(target: Ctr, ref: ModuleRef): ModuleRef {
     this.set(target, ref);
     return ref;
+  }
+
+  get detached() {
+    return {
+      fetch: this.fetch.bind(this),
+      register: this.register.bind(this),
+    };
   }
 }

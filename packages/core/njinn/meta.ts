@@ -29,14 +29,14 @@ export enum NjinnKeys {
 const normalizeProviders = (p: AnyProvider | Ctr): Provider =>
   (typeof p === "function" ? readInjectable(p) : p) as Provider;
 
-const normalizeExports = (p: any) => Object.hasOwn(p, "token") ? p.token : p;
+// const normalizeExports = (p: any) => Object.hasOwn(p, "token") ? p.token : p;
 
 export function readInjectableStrategy(target: Target) {
   return strategy(read<Provider>(NjinnKeys.Injectable, target));
 }
 
 export function readMdl(target: Target) {
-  return { ...readModule(target), resolver: strategy(read<Provider>(NjinnKeys.Injectable, target)) };
+  return {...readModule(target), resolver: strategy(readInjectable(target))};
 }
 
 export function readModule(target: Target) {
@@ -52,7 +52,7 @@ export function readCtrParams(target: Target): Token[] {
   if (params.length) {
     const injected = read<InjectedMetaParam[]>(NjinnKeys.Params, target, []);
     if (injected.length) {
-      for (const { index, value } of injected) {
+      for (const {index, value} of injected) {
         params[index] = value;
       }
     }
@@ -62,7 +62,7 @@ export function readCtrParams(target: Target): Token[] {
 
 export function markModule(target: Target, mark: Partial<ModuleMetaDescriptor>) {
   define<ModuleMetaDescriptor>(NjinnKeys.Module, {
-    ...{ imports: [], exports: [], providers: [] },
+    ...{imports: [], exports: [], providers: []},
     ...mark,
   }, target);
   // const imports = mark.imports ?? [];
@@ -84,5 +84,5 @@ export function markInjectable(target: Target, mark?: Partial<InjectableMetaDesc
 }
 
 export function markInject(target: Target, token: Token, index: number) {
-  merge<InjectedMetaParam>(NjinnKeys.Params, { value: token, index }, target);
+  merge<InjectedMetaParam>(NjinnKeys.Params, {value: token, index}, target);
 }

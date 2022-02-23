@@ -16,13 +16,13 @@ export type TypeProvider = Provide<{ useType: Token }>;
 export type FactoryProvider<T = unknown> = Provide<{ useFactory: Factory<T> }>;
 export type Provider = ValueProvider & TypeProvider & FactoryProvider;
 export type AnyProvider = ValueProvider | TypeProvider | FactoryProvider;
-export type CtrOrProvider = Ctr | AnyProvider;
 
 // metadata
 export type InjectedMetaParam = { index: number; value: Token };
 export type InjectableMetaDescriptor = { scope: string };
 
 // registries
+export type CtrOrProvider = Ctr | AnyProvider;
 export type TokenOrProvider = Token | Provider;
 
 export interface ProvidingRegistry extends Map<Token, Provider> {

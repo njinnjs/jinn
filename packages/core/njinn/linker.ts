@@ -17,24 +17,24 @@ export default function linker(target: Ctr, options: LinkerOptions = {}) {
   const link = (target: Ctr): ModuleRef => {
     const { imports, providers, exports, resolver } = readMdl(target);
 
-    const imported: ModuleRef[] = imports.map((m: Ctr) => registry.has(m) ? registry.fetch(m) : link(m));
-
-    const provided: ResolversRegistry = providers.reduce(register, new ResolversRegistry(target, resolver));
-
-    for (const e of exports) {
-    }
-    const exported = exports.reduce(
-      (r: ResolversRegistry, p: CtrOrProvider) => {
-        if (provided.exists(p)) {
-          return r.register(p);
-        }
-        if (registry.has(p as Ctr)) {
-          return r.import(registry.fetch(p as Ctr).exports);
-        }
-        throw new Error(`unable to export ${String(p)}`);
-      },
-      new ResolversRegistry(target, resolver),
-    );
+    // const imported: ModuleRef[] = imports.map((m: Ctr) => registry.has(m) ? registry.fetch(m) : link(m));
+    //
+    // const provided: ResolversRegistry = providers.reduce(register, new ResolversRegistry(target, resolver));
+    //
+    // for (const e of exports) {
+    // }
+    // const exported = exports.reduce(
+    //   (r: ResolversRegistry, p: CtrOrProvider) => {
+    //     if (provided.exists(p)) {
+    //       return r.register(p);
+    //     }
+    //     if (registry.has(p as Ctr)) {
+    //       return r.import(registry.fetch(p as Ctr).exports);
+    //     }
+    //     throw new Error(`unable to export ${String(p)}`);
+    //   },
+    //   new ResolversRegistry(target, resolver),
+    // );
 
     return registry.register(target, new Host(target as Ctr, imported, provided, exported, logger));
   };
