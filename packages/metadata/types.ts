@@ -1,17 +1,38 @@
-import { Ctr } from '../core/types/reflect.ts';
-import { Provider, Token } from '../core/types/njinn.ts';
+import type { MetadataKey, PropertyKey, Target } from "../core/reflection/reflection.ts";
+import { Scopes } from "./constants.ts";
 
-export type ProviderOrCtr = Provider | Ctr;
-export type TokenOrProviderOrCtr = Token | ProviderOrCtr;
+// Reflection, Metadata & Core Types
+// ----------------------------------------------------------------------
+export { MetadataKey, PropertyKey, Target };
 
-export interface ModuleMetadata {
-  imports: Ctr[];
-  providers: ProviderOrCtr[];
-  exports: TokenOrProviderOrCtr[];
+// Instance of unknown constructor
+// deno-lint-ignore no-explicit-any
+export type Instance<T = any> = T;
+
+// Constructor (class) type
+export interface Ctr<T = Instance> extends Function {
+  new (...args: Instance[]): T;
 }
 
-export interface ModuleDescriptor {
-  imports: ModuleDescriptor[];
-  providers: unknown[];
-  exports: unknown[];
+// Replacement for Function when needed by design (js internals)
+// deno-lint-ignore ban-types
+export type Func<TFunction = Function> = TFunction;
+
+// Metadata property
+export type Property = string | symbol;
+
+// Injection token
+export type Token = Target | symbol | string;
+
+// Metadata Accessors Types
+// ----------------------------------------------------------------------
+
+export interface InjectedParam {
+  target: Target;
+  token: Token;
+  index: number;
+}
+
+export interface InjectableOptions {
+  scope: Scopes;
 }

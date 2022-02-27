@@ -18,8 +18,7 @@ TBD
 
 ### Dependency Management
 
-While most of DI frameworks support common architecture, the following impl was designed with its own
-purpose.
+While most of DI frameworks support common architecture, the following impl was designed with its own purpose.
 
 #### `ModuleRef`
 
