@@ -1,3 +1,3 @@
 # JINN
 
-[Architecture Blog](./blog.md)
+[Architecture Blog](./blog/index.md)
