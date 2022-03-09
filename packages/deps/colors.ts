@@ -17,4 +17,4 @@ export {
   reset,
   white,
   yellow,
-} from "https://deno.land/std@0.125.0/fmt/colors.ts";
+} from "https://deno.land/std@0.127.0/fmt/colors.ts";

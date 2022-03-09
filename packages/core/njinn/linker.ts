@@ -1,5 +1,5 @@
 import type { Ctr, CtrOrProvider, LinkerOptions, ModuleRef, Token } from "../types/njinn.ts";
-import { getLogger } from "../../common/deps/log.ts";
+import { getLogger } from "../../deps/log.ts";
 import { readMdl } from "./meta.ts";
 import ProviderRegistry from "./provider-registry.ts";
 import ModuleRegistry from "./registry/module-registry.ts";

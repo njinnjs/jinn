@@ -1,6 +1,6 @@
-import type { Ctr, InjectableOptions, InjectedParam, Target, Token } from "./types.ts";
+import type { Ctr, InjectableOptions, InjectedParam, ModuleOptions, Target, Token } from "./types.ts";
 import { assertCtr } from "../testing/mod.ts";
-import { getAs, smd } from "./reflects.ts";
+import { addTo, getAs, smd } from "./reflects.ts";
 import { Keys } from "./constants.ts";
 
 // Writers
@@ -8,18 +8,19 @@ import { Keys } from "./constants.ts";
 
 export function injectParam(target: Target, token: Token, index: number) {
   assertCtr(target);
-  const params = getAs<InjectedParam[]>(Keys.Params, target) ?? [];
-  smd(Keys.Params, [...params, { target, token, index }], target);
+  addTo<InjectedParam>(Keys.Params, target, { target, token, index });
 }
 
 export function markInjectable(target: Target, options: Partial<InjectableOptions>) {
   assertCtr(target);
-  const scope = smd(Keys.Injectable, options, target);
+  smd(Keys.Injectable, options, target);
 }
 
-export function markModule(target: Target, options: any) {
+export function markModule(target: Target, options: Partial<ModuleOptions>) {
   assertCtr(target);
   smd(Keys.Module, options, target);
+  const a: unknown = () => {
+  };
 }
 
 // Readers

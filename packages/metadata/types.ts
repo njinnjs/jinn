@@ -36,3 +36,6 @@ export interface InjectedParam {
 export interface InjectableOptions {
   scope: Scopes;
 }
+
+export interface ModuleOptions {
+}

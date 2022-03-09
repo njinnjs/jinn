@@ -1,5 +1,5 @@
 import type { Ctr, ModuleRef, ProvidingRegistry, Token } from "../types/njinn.ts";
-import { Logger } from "../../common/deps/log.ts";
+import { Logger } from "../../deps/log.ts";
 import { Scopes } from "./meta.ts";
 import strategy from "./resolver.ts";
 import scanner from "./scanner.ts";

@@ -9,3 +9,8 @@ export const smd = Reflect.defineMetadata;
 
 export const getAs = <T>(key: MetadataKey, target: Target, defaultValue?: T): T =>
   gmd(key, target) ?? defaultValue as T;
+
+export const addTo = <T>(key: MetadataKey, target: Target, item: T) => {
+  const list = getAs<T[]>(key, target);
+  smd(key, [...list, item], target);
+};
