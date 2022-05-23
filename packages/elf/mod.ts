@@ -1,12 +1,14 @@
 import linker from "./linker.ts";
 export {
+  define,
   defineModule,
   exportModule,
   exportProvider,
+  imports,
   provide,
   provideLocalType,
   provideLocalValue,
   provideType,
   provideValue,
-} from "./jinn.ts";
+} from "./elf.ts";
 export { linker };

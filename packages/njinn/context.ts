@@ -16,11 +16,11 @@ export class Context {
   }
 
   // lookup for module
-  select(mdl: Ctr) {
+  select(mdl: Ctr): ElfModule {
     const selected = this.ctx.select(mdl);
     if (!selected) {
       // error
     }
-    return selected;
+    return selected as ElfModule;
   }
 }

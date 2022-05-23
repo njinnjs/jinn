@@ -7,7 +7,7 @@ import {
   imports,
   providers,
   provideType,
-} from "../../packages/elf/jinn.ts";
+} from "../../packages/elf/elf.ts";
 
 export class UsersService {
   constructor(public readonly db: Database) {
