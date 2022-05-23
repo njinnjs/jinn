@@ -1,26 +1,34 @@
-import { Ctr } from "../elf/types.ts";
-import linker from "../elf/linker.ts";
-import { ElfModule } from "../elf/module.ts";
+import { Ctr, Func, Token } from "./elf/types.ts";
+import linker, { LinkerOptions } from "./elf/linker.ts";
+import { ElfModule } from "./elf/module.ts";
+import Registry from "./elf/registry.ts";
 
-export interface ContextOptions {
-  name?: string;
+export interface ContextOptions extends LinkerOptions {
+  logger: Func;
 }
 
 export class Context {
-  static create(rootModule: Ctr, opts: ContextOptions = {}) {
-    const link = linker();
-    return new Context(link(rootModule));
+  static create(rootModule: Ctr, options: Partial<ContextOptions> = {}): Context {
+    const { contextRegistry = Registry.context(), modulesRegistry = Registry.modules() } = options;
+    return new Context(linker({ contextRegistry, modulesRegistry })(rootModule));
   }
 
-  private constructor(private readonly ctx: ElfModule) {
+  private constructor(private readonly root: ElfModule) {
   }
 
-  // lookup for module
+  /**
+   * Module lookup
+   * @param mdl
+   */
   select(mdl: Ctr): ElfModule {
-    const selected = this.ctx.select(mdl);
-    if (!selected) {
-      // error
-    }
-    return selected as ElfModule;
+    return Registry.context().get(mdl) as ElfModule;
+  }
+
+  /**
+   * Root module resolver
+   * @param token
+   */
+  resolve<T = unknown>(token: Token): Promise<T> {
+    return this.root.resolve<T>(token);
   }
 }

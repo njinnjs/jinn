@@ -7,7 +7,7 @@ import {
   provideType,
   provideValue,
 } from "./elf.ts";
-import { assert, assertEquals, assertObjectMatch } from "../testing/deps.ts";
+import { assert, assertEquals, assertObjectMatch } from "../../testing/deps.ts";
 import { Resolver } from "./types.ts";
 
 const token = "token";

@@ -17,6 +17,7 @@ export interface Ctr<T = Instance> extends Function {
 export type Async<T> = T | Promise<T>;
 
 // Jinn types
+
 export type Token = Ctr | Func | string | symbol;
 
 export interface Resolver {
@@ -25,13 +26,18 @@ export interface Resolver {
 
 export type Factory = (resolver: Resolver) => unknown;
 
-export type Scope = "local" | "global";
+export type ProviderScope = "local" | "global";
+export type Provider = { token: Token; factory: Factory; scope: ProviderScope };
+
 export type ExportType = "module" | "provider";
-export type Provider = { token: Token; factory: Factory; scope: Scope };
-export type Exporter = { type: ExportType; exported: Token };
+export type Exporter = { exported: Token; type: ExportType };
 
 export interface ModuleDefinition {
   imports: Ctr[];
   providers: Provider[];
   exports: Exporter[];
 }
+
+export type ModuleDefKey = keyof ModuleDefinition;
+export type ModuleDefValue = Provider | Ctr | Exporter;
+export type ModuleDefs<T = ModuleDefValue> = [ModuleDefKey, T[]];

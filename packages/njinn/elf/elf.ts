@@ -1,4 +1,14 @@
-import type { Ctr, Exporter, Factory, ModuleDefinition, Provider, Resolver, Scope, Token } from "./types.ts";
+import type {
+  Ctr,
+  Exporter,
+  Factory,
+  ModuleDefinition,
+  ModuleDefs,
+  Provider,
+  ProviderScope,
+  Resolver,
+  Token,
+} from "./types.ts";
 import Registry from "./registry.ts";
 
 const fromType = (ctr: Ctr, tokens: Token[]) =>
@@ -6,7 +16,7 @@ const fromType = (ctr: Ctr, tokens: Token[]) =>
     Promise.all(tokens.map((token) => resolver.resolve(token)))
       .then((args) => Reflect.construct(ctr, args));
 
-export function provide(token: Token, factory: Factory, scope: Scope = "global"): Provider {
+export function provide(token: Token, factory: Factory, scope: ProviderScope = "global"): Provider {
   return { token, factory, scope };
 }
 
@@ -42,19 +52,19 @@ export function defineModule(
   registry.set(mdl, definition);
 }
 
-export function providers(...p: Provider[]): [keyof ModuleDefinition, Provider[]] {
+export function providers(...p: Provider[]): ModuleDefs<Provider> {
   return ["providers", p];
 }
 
-export function imports(...i: Ctr[]): [keyof ModuleDefinition, Ctr[]] {
+export function imports(...i: Ctr[]): ModuleDefs<Ctr> {
   return ["imports", i];
 }
 
-export function exports(...e: Exporter[]): [keyof ModuleDefinition, Exporter[]] {
+export function exports(...e: Exporter[]): ModuleDefs<Exporter> {
   return ["exports", e];
 }
 
-export function define(mdl: Ctr, ...defs: [keyof ModuleDefinition, (Provider | Ctr | Exporter)[]][]) {
+export function define(mdl: Ctr, ...defs: ModuleDefs[]) {
   defineModule(
     mdl,
     defs.reduce((acc, [key, items]) => {
