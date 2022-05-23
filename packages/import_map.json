@@ -1,6 +1,0 @@
-{
-  "imports": {
-    "jinn/reflect": "./core/reflection/reflection.ts",
-    "jinn/": "./"
-  }
-}
