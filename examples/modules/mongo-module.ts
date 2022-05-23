@@ -1,5 +1,5 @@
 import { Database, MongoClient } from "https://deno.land/x/mongo@v0.29.1/mod.ts";
-import { defineModule, exportProvider, provide } from "../../packages/njinn/jinn.ts";
+import { defineModule, exportProvider, provide } from "../../packages/elf/jinn.ts";
 import { Factory } from "jinn/njinn/types.ts";
 
 export { Database };

@@ -2,10 +2,9 @@
 // provide configuration
 // create database connection
 // use users service to read users
-import { define, imports } from '../packages/njinn/jinn.ts';
-import linker from '../packages/njinn/linker.ts';
+import { define, imports } from "../packages/elf/jinn.ts";
+import linker from "../packages/elf/linker.ts";
 import { UsersModule, UsersService } from "./modules/users-module.ts";
-
 
 export class AppModule {
 }

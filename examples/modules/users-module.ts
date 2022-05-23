@@ -1,5 +1,13 @@
 import { Database, MongoModule } from "./mongo-module.ts";
-import { define, exports, imports, providers, exportModule, exportProvider, provideType } from '../../packages/njinn/jinn.ts';
+import {
+  define,
+  exportModule,
+  exportProvider,
+  exports,
+  imports,
+  providers,
+  provideType,
+} from "../../packages/elf/jinn.ts";
 
 export class UsersService {
   constructor(public readonly db: Database) {
@@ -13,7 +21,8 @@ export class UsersService {
 export class UsersModule {
 }
 
-define(UsersModule,
+define(
+  UsersModule,
   imports(
     MongoModule,
   ),
@@ -23,5 +32,5 @@ define(UsersModule,
   exports(
     exportModule(MongoModule),
     exportProvider(UsersService),
-  )
+  ),
 );

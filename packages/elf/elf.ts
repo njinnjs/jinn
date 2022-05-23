@@ -7,7 +7,7 @@ const fromType = (ctr: Ctr, tokens: Token[]) =>
       .then((args) => Reflect.construct(ctr, args));
 
 export function provide(token: Token, factory: Factory, scope: Scope = "global"): Provider {
-  return {token, factory, scope};
+  return { token, factory, scope };
 }
 
 export function provideValue<T = unknown>(token: Token, value: T): Provider {
@@ -27,11 +27,11 @@ export function provideLocalType<T = unknown>(type: Ctr, ...inject: Token[]): Pr
 }
 
 export function exportModule(exported: Ctr): Exporter {
-  return {type: "module", exported};
+  return { type: "module", exported };
 }
 
 export function exportProvider(exported: Token): Exporter {
-  return {type: "provider", exported};
+  return { type: "provider", exported };
 }
 
 export function defineModule(
@@ -43,21 +43,24 @@ export function defineModule(
 }
 
 export function providers(...p: Provider[]): [keyof ModuleDefinition, Provider[]] {
-  return ['providers', p];
+  return ["providers", p];
 }
 
 export function imports(...i: Ctr[]): [keyof ModuleDefinition, Ctr[]] {
-  return ['imports', i];
+  return ["imports", i];
 }
 
 export function exports(...e: Exporter[]): [keyof ModuleDefinition, Exporter[]] {
-  return ['exports', e];
+  return ["exports", e];
 }
 
 export function define(mdl: Ctr, ...defs: [keyof ModuleDefinition, (Provider | Ctr | Exporter)[]][]) {
-  defineModule(mdl, defs.reduce((acc, [key, items]) => {
-    // @ts-ignore no type convention to solve the implicit "any" conflict
-    acc[key] = [...acc[key], ...items];
-    return acc;
-  }, {imports: [], providers: [], exports: []} as ModuleDefinition));
+  defineModule(
+    mdl,
+    defs.reduce((acc, [key, items]) => {
+      // @ts-ignore no type convention to solve the implicit "any" conflict
+      acc[key] = [...(acc[key] ?? []), ...items];
+      return acc;
+    }, {} as Partial<ModuleDefinition>),
+  );
 }

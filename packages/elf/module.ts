@@ -1,19 +1,19 @@
 import { Async, Ctr, Exporter, Func, Provider, Resolver, Token } from "./types.ts";
 
 export interface ModuleOptions {
-  imports: JinnModule[];
+  imports: ElfModule[];
   providers: Provider[];
   exports: Exporter[];
 }
 
-export class JinnModule implements Resolver {
+export class ElfModule implements Resolver {
   private readonly cache = new Map<Token, unknown>();
   private static readonly globalCache = new Map<Token, unknown>();
 
   constructor(public readonly ctr: Ctr, public readonly desc: Partial<ModuleOptions>) {
   }
 
-  get imported(): JinnModule[] {
+  get imported(): ElfModule[] {
     return this.desc.imports ?? [];
   }
 
@@ -30,20 +30,20 @@ export class JinnModule implements Resolver {
       return this.cache.get(token) as Async<T>;
     }
 
-    if (JinnModule.globalCache.has(token)) {
-      return JinnModule.globalCache.get(token) as Async<T>;
+    if (ElfModule.globalCache.has(token)) {
+      return ElfModule.globalCache.get(token) as Async<T>;
     }
 
     const { factory, scope } = this.find(token);
-    const instance = await factory<T>(this); // add error handler
+    const instance = await factory(this); // add error handler
 
     if (scope === "local") {
       this.cache.set(token, instance);
     } else if (scope === "global") {
-      JinnModule.globalCache.set(token, instance);
+      ElfModule.globalCache.set(token, instance);
     }
 
-    return instance;
+    return instance as T;
   }
 
   find(token: Token): Provider {
@@ -64,6 +64,19 @@ export class JinnModule implements Resolver {
     throw new Error(`unable to find provider for token "${String(token)}"`);
   }
 
+  select(mdl: Ctr): ElfModule | undefined {
+    if (this.ctr === mdl) {
+      return this;
+    }
+    for (const i of this.imported) {
+      const res = i.select(mdl);
+      if (res) {
+        return res;
+      }
+    }
+    return undefined;
+  }
+
   /**
    * Search the exported items for specific token
    * Return "undefined" if not found
@@ -79,7 +92,7 @@ export class JinnModule implements Resolver {
       if (ex.type === "module") {
         const m = ex.exported as Func;
         // get the module from the imports
-        const mdl = this.imported.find((i) => i.ctr === m) as JinnModule;
+        const mdl = this.imported.find((i) => i.ctr === m) as ElfModule;
         if (!mdl) {
           throw new Error(`module "${m.name}" exported at ${this.ctr.name} but never imported`);
         }

@@ -1,5 +1,5 @@
 import { Ctr, ModuleDefinition } from "./types.ts";
-import { JinnModule } from "./module.ts";
+import { ElfModule } from "./module.ts";
 
 export default class Registry {
   static modulesRegistry = new WeakMap();
@@ -9,7 +9,7 @@ export default class Registry {
     return Registry.modulesRegistry;
   }
 
-  static context(): WeakMap<Ctr, JinnModule> {
+  static context(): WeakMap<Ctr, ElfModule> {
     return Registry.globalContext;
   }
 }

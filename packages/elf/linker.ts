@@ -1,23 +1,23 @@
 import { Ctr, ModuleDefinition } from "./types.ts";
 import Registry from "./registry.ts";
-import { JinnModule } from "./module.ts";
+import { ElfModule } from "./module.ts";
 
-export type Linker = (app: Ctr) => JinnModule;
+export type Linker = (app: Ctr) => ElfModule;
 
 export interface LinkerOptions {
   registry: WeakMap<Ctr, Partial<ModuleDefinition>>;
-  context: WeakMap<Ctr, JinnModule>;
+  context: WeakMap<Ctr, ElfModule>;
 }
 
 export default function linker(options: Partial<LinkerOptions> = {}): Linker {
   const { registry = Registry.modules(), context = Registry.context() } = options;
 
-  function link(ctr: Ctr): JinnModule {
+  function link(ctr: Ctr): ElfModule {
     const definition = registry.get(ctr) as ModuleDefinition;
     const imports = (definition.imports ?? []).map((mdl) =>
-      context.has(mdl) ? context.get(mdl) as JinnModule : link(mdl)
+      context.has(mdl) ? context.get(mdl) as ElfModule : link(mdl)
     );
-    return new JinnModule(ctr, {
+    return new ElfModule(ctr, {
       imports,
       providers: definition.providers ?? [],
       exports: definition.exports ?? [],

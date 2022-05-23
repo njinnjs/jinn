@@ -1,4 +1,4 @@
-import { defineModule, provideType, provideValue } from "../../packages/njinn/jinn.ts";
+import { defineModule, provideType, provideValue } from "../../packages/elf/jinn.ts";
 
 export const CONF_TOKEN = Symbol("conf-token");
 
